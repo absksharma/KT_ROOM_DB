@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {
     val db by lazy {
@@ -11,7 +12,7 @@ class MainActivity : AppCompatActivity() {
             this,
             AppDataBase::class.java,
             "User.db"
-        ).allowMainThreadQueries()
+        )
             .fallbackToDestructiveMigration()
             .build()
     }
@@ -22,16 +23,21 @@ class MainActivity : AppCompatActivity() {
 
 
         save.setOnClickListener {
-            db.userDao().insert(User("abhishek", "78451234", "dbhauisdjkba", 20))
+            GlobalScope.launch(Dispatchers.IO) {
+                db.userDao().insert(User("abhishek", "78451234", "dbhauisdjkba", 20))
+
+            }
         }
         deleteData.setOnClickListener {
-            val list: List<User> = db.userDao().getAll()
-            if (list.isNotEmpty()) {
-                with(list[0]) {
-                    textView.text = name
-                    textView2.text = age.toString()
-                    textView3.text = address
-                    textView4.text = number
+            runBlocking {
+                val list = GlobalScope.async(Dispatchers.IO) { db.userDao().getAll() }
+                if (list.await().isNotEmpty()) {
+                    with(list.await()[0]) {
+                        textView.text = name
+                        textView2.text = age.toString()
+                        textView3.text = address
+                        textView4.text = number
+                    }
                 }
             }
         }

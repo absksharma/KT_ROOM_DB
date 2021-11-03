@@ -9,7 +9,7 @@ import androidx.room.Query
 interface UserDao {
 
     @Insert
-    fun insert(user: User)
+    suspend fun insert(user: User)
 
     @Insert
     fun insertAll(list: List<User>)
@@ -18,10 +18,10 @@ interface UserDao {
     fun delete(user: User)
 
     @Query("SELECT  * FROM User")
-    fun getAll(): List<User>
+    suspend fun getAll(): List<User>
 
-//    @Query("SELECT * FROM User Where age >= age")
-//    fun userWithAge(age: Int): List<User>
+    @Query("SELECT * FROM User Where age >= :age")
+    fun userWithAge(age: Int): List<User>
 
 
 }
